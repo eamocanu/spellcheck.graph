@@ -23,5 +23,5 @@ use O(n*m) memory (where m is avg word length) by generating for the original wo
 new words w space )ie" cat ->  at, c t, and ca . This way I eliminate the one loop 
 that right now puts every letter surrounding the key in the place of space 
 
-
-
+TODO: Account for plurals
+TODO: maybe take into account frequency and phonetic structure of the word
