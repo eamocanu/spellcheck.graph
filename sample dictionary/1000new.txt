@@ -950,7 +950,7 @@ virtue
 visit
 voice
 vote
-wage/s
+wage
 wait
 walk
 wall
@@ -1014,3 +1014,8 @@ yield
 you
 young
 government
+lean
+peanut
+apple
+pea
+interaction
