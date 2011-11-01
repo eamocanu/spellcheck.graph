@@ -3,8 +3,10 @@ import java.util.Vector;
 
 /** 
  * @author eamocanu
- *  
- * Graph node. All graph nodes are children with respect ot other graph nodes.
+ * 
+ * Used for graphs or tracing the entire path for a derived word.
+ *
+ * Graph node. All graph nodes are children with respect to other graph nodes.
  * If A is a child of B then B is a child of A.
  * 
  * However, if traversing the graph in such a way that we are interested
