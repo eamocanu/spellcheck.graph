@@ -1,3 +1,4 @@
+package eamocanu.dictionary;
 /**
  * Experimental spell check API
  *
@@ -47,7 +48,7 @@ import java.util.Stack;
  * 
  * Currently it generates words for a maximum depth of 2, but this can be changed.
  */
-public class Dictionary {
+public class Dictionary {// implements Dictionary {
 	
 	/** Maximum depth for DFS */
 	final int MAX_DEPTH = 2;
