@@ -2,7 +2,8 @@ package eamocanu.dictionary;
 /**
  * Experimental spell check API
  *
- * Created by Adrian M in 20101 *
+ * Created by Adrian M in 2011
+ *
  * Downloaded from https://github.com/eamocanu/spellcheck.graph/downloads
  * Git repository https://github.com/eamocanu/spellcheck.graph
  */

@@ -48,7 +48,7 @@ import java.util.Stack;
  * 
  * Currently it generates words for a maximum depth of 2, but this can be changed.
  */
-public class Dictionary {// implements Dictionary {
+public class SpellChecker implements SpellCheckerInterface {
 	
 	/** Maximum depth for DFS */
 	final int MAX_DEPTH = 2;
@@ -71,7 +71,7 @@ public class Dictionary {// implements Dictionary {
 	/**
 	 * @param phoneticMatching	if true, it allow phonetic matching
 	 */
-	public Dictionary(boolean phoneticMatching) {
+	public SpellChecker(boolean phoneticMatching) {
 		enablePhoneticMatching= phoneticMatching;
 		originalWords= new HashMap<String,String>();
 		charsMapping= new Chars();
@@ -85,7 +85,7 @@ public class Dictionary {// implements Dictionary {
 	 * @param path	path and name of dictionary file
 	 * @throws FileNotFoundException	if dictionary file not found
 	 */
-	public void buildDictionary(String path) throws FileNotFoundException{
+	public void buildDictionary(String path) throws FileNotFoundException {
 		Scanner scanner=new Scanner(new File(path));
 		
 		while (scanner.hasNext()){
