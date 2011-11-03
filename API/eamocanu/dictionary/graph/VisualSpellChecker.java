@@ -46,14 +46,6 @@ public class VisualSpellChecker implements SpellCheckerInterface {
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see eamocanu.dictionary.SpellCheckerInterface#getPhoneticMatches(java.lang.String)
-	 */
-	@Override
-	public Set<String> getPhoneticMatches(String word) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	/* (non-Javadoc)
 	 * @see eamocanu.dictionary.SpellCheckerInterface#isCorrectWord(java.lang.String)
@@ -64,13 +56,6 @@ public class VisualSpellChecker implements SpellCheckerInterface {
 		return false;
 	}
 
-	/* (non-Javadoc)
-	 * @see eamocanu.dictionary.SpellCheckerInterface#isPercentMatch(java.lang.String, java.lang.String)
-	 */
-	@Override
-	public boolean isPercentMatch(String original, String generated) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+
 
 }

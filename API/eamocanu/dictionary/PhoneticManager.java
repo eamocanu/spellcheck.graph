@@ -31,9 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * 
- */
 
 /**
  * @author amocanu
@@ -42,6 +39,8 @@ import java.util.Set;
  * From testing, this is useful only when "text speak" is present in the dictionary
  * If it generates other valid words that are not in the dictionary, this should
  * be disabled.
+ * 
+ * A collection of some phonemes.
  */
 public class PhoneticManager {
 	private Map <String,List<String>> phoneticMapppings = new HashMap <String,List<String>>();
@@ -71,7 +70,7 @@ public class PhoneticManager {
 		add(phoneticMapppings, "ah", "a");
 		add(phoneticMapppings, "aw", "o", "a", "oh");
 		add(phoneticMapppings, "a", "uh", "ah");
-//		add(phoneticMapppings, "ch", "tch");
+		add(phoneticMapppings, "ch", "tch");
 //		add(phoneticMapppings, "sad", "cad");
 		add(phoneticMapppings, "t", "th");
 		add(phoneticMapppings, "ou", "o","u");
@@ -84,7 +83,7 @@ public class PhoneticManager {
 	}
 
 	/** This method is slow: it is recursive and concatenates String objects.
-	 * FIXME
+	 * 
 	 * @param s				original string which is to have phonetic matches replaced
 	 * @param startIndex	start index in string where replacement starts
 	 * @param generations	stored results
@@ -96,9 +95,9 @@ public class PhoneticManager {
 			String suffix= s.substring(i+1, s.length());
 			
 			List<String> matches = getPhoneticMatchesFromMap(""+s.charAt(i));
-			//replace 1 char w *
+			//replace 1 char w 1 or more
 			for (String match: matches){
-				String newS= prefix +match +suffix;
+				String newS= prefix +match +suffix;//TODO speed up
 				generations.add(newS);
 				generatePhoneticMatches(newS, i+ match.length(), generations);
 			}
@@ -110,7 +109,7 @@ public class PhoneticManager {
 			matches= getPhoneticMatchesFromMap(s.substring(i,i+2));
 			//replace 2 chars w *
 			for (String match: matches){
-				String newS= prefix +match +suffix2;
+				String newS= prefix +match +suffix2;//TODO speed up
 				generations.add(newS);
 				generatePhoneticMatches(newS, i+ match.length(), generations);
 			}

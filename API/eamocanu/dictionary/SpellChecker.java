@@ -69,7 +69,8 @@ public class SpellChecker implements SpellCheckerInterface {
 	
 	
 	/**
-	 * @param phoneticMatching	if true, it allow phonetic matching
+	 * @param phoneticMatching	if true, it allows phonetic 
+	 * 							matching for generated words
 	 */
 	public SpellChecker(boolean phoneticMatching) {
 		enablePhoneticMatching= phoneticMatching;
@@ -100,7 +101,7 @@ public class SpellChecker implements SpellCheckerInterface {
 	 * 
 	 * It does character (1) replacement, (2) insertion, (3) removal, and (4) swapping
 	 * 
-	 * TODO optimize
+	 * TODO optimize all string concats
 	 */
 	private List<String> generateMisspelledWords(String validWord) {
 		List<String> results = new ArrayList<String>();
@@ -115,15 +116,14 @@ public class SpellChecker implements SpellCheckerInterface {
 			
 			List<Character> chars = charsMapping.getCharsFor(validWord.charAt(i));
 			//replace 1 char
-//			for (char ch='a'; ch<='z';ch++){
 			for (Character ch:chars){
-				String generatedWd= prefix + ch+ suffix;//TODO slow->buffer it
+				String generatedWd= prefix + ch+ suffix;//TODO slow
 				results.add(generatedWd);
 			}
 			
 			//add insert 1 char (make longer by 1) - inserts as prefix and in mid word
 			for (char ch='a'; ch<='z';ch++){
-				String generatedWd= prefix + ch + suffix2;
+				String generatedWd= prefix + ch + suffix2;//TODO slow
 				results.add(generatedWd);
 				
 				//insert new char as suffix
@@ -132,7 +132,7 @@ public class SpellChecker implements SpellCheckerInterface {
 			}
 			
 			//remove a char
-			String generatedWd= prefix + suffix;//slow
+			String generatedWd= prefix + suffix;
 			results.add(generatedWd);
 			
 			//swap chars
@@ -141,7 +141,9 @@ public class SpellChecker implements SpellCheckerInterface {
 			results.add(generatedWd);
 		}
 		
+		//don't allow back edges to parent node
 		results.remove(validWord);
+		
 		return results;
 	}
 
@@ -157,7 +159,17 @@ public class SpellChecker implements SpellCheckerInterface {
 	}
 
 	
-	/**
+	/** Look to see if given input string is in dictionary.
+	 * If it is, it is correct.
+	 * If it is not in the dictionary, generate a graph of possible
+	 * nodes starting from given input string and test nodes in this graph
+	 * to see which ones are better matches.
+	 * 
+	 * A generated word is deemed a good match for the original word, if for some 
+	 * threshold, the generated word matches the original word.
+	 * 
+	 * Phonetic matches are also generated. 
+	 * 
 	 * @param word	misspelled word to start generating words from
 	 * @return		list of possible corrections
 	 */
@@ -179,7 +191,8 @@ public class SpellChecker implements SpellCheckerInterface {
 		stack.push(misspelledWord);
 		stack.push(separatorString);
 		
-		
+		//TODO build a BST of matches based on score and return top ones
+		//get phonetic matches first
 		if (enablePhoneticMatching){
 			possibleCorrections= getPhoneticMatches(misspelledWord);
 		}
@@ -239,7 +252,7 @@ public class SpellChecker implements SpellCheckerInterface {
 	 * @param word	word string for which to get phonetic matches
 	 * @return		set of phonetic matches which are valid words
 	 */
-	public Set<String> getPhoneticMatches(String word) {
+	protected Set<String> getPhoneticMatches(String word) {
 		Set<String> phoneticMatches = new HashSet<String>();
 		
 		//only if they're in map/dic
@@ -262,11 +275,12 @@ public class SpellChecker implements SpellCheckerInterface {
 	 * Feel free to override to create your own rules for accepting 
 	 * a word as correct.
 	 * 
-	 * @param original
-	 * @param generated
-	 * @return
+	 * @param original	original string 
+	 * @param generated	generated string
+	 * @return	true if generated string is similar enough to original string
+	 * 			Similarity is done based on some threshold.
 	 */
-	public boolean isPercentMatch(String original, String generated) {
+	protected boolean isPercentMatch(String original, String generated) {
 		final int MAX_DIFFERENCE=2;
 		//if a word is length 1 (ie I, a) don't allow long words)
 		if (original.length()==1 && generated.length()>2) return false;

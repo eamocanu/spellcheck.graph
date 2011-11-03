@@ -12,13 +12,13 @@ import eamocanu.dictionary.SpellChecker;
 public class Main {
 
 	public static void main(String[] args) {
-		SpellChecker d= new SpellChecker(true);
+		SpellChecker spellChecker= new SpellChecker(true);
 
 		try {
-			d.buildDictionary("sample dictionary/1000new.txt");
+			spellChecker.buildDictionary("sample dictionary/1000new.txt");
 
 			Collection<String> ls;
-			ls = d.correctWord("tru");
+			ls = spellChecker.correctWord("tru");
 			printList(ls);		
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();

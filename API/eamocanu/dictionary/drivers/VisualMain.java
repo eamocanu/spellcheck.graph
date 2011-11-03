@@ -23,16 +23,17 @@ import eamocanu.dictionary.SpellChecker;
  * Type in some letters and see real time spell suggestions.
  */
 public class VisualMain extends JPanel {
+	private static final long serialVersionUID = 6364349005495411834L;
 	private JTextField dataInputField;
 	private JLabel correctOutputField;
-	SpellChecker d;
+	private SpellChecker spellChecker;
 	
 	
 	public VisualMain(){
 
 		try {
-			d= new SpellChecker(true);
-			d.buildDictionary("sample dictionary/1000new.txt");
+			spellChecker= new SpellChecker(true);
+			spellChecker.buildDictionary("sample dictionary/1000new.txt");
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -73,7 +74,7 @@ public class VisualMain extends JPanel {
 			String text = dataInputField.getText();
 			if (text.length()<2) return;
 			
-			Collection<String> words = d.correctWord(text.trim());
+			Collection<String> words = spellChecker.correctWord(text.trim());
 			correctOutputField.setText(printList(words));
 
 		}
@@ -95,7 +96,7 @@ public class VisualMain extends JPanel {
 			String text = dataInputField.getText();
 			if (text.trim().length()<2) return;
 
-			Collection<String> words = d.correctWord(text.trim());
+			Collection<String> words = spellChecker.correctWord(text.trim());
 			correctOutputField.setText(printList(words));
 		}
 		

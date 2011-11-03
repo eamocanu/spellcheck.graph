@@ -23,7 +23,6 @@ package eamocanu.dictionary;
 
 import java.io.FileNotFoundException;
 import java.util.Collection;
-import java.util.Set;
 
 /**
  * @author Adrian
@@ -31,10 +30,30 @@ import java.util.Set;
  */
 public interface SpellCheckerInterface {
 	
+	/** Checks to see if given word is in the dictionary or not. 
+	 * If it is, then it is correct.
+	 * 
+	 * @param word	word to test
+	 * @return		true if the word to be tested is in dictionary
+	 */
 	boolean isCorrectWord(String word);
+	
+	
+	/** Look to see if given input string is in dictionary.
+	 * If it is, it is correct.
+	 * 
+	 * @param word	misspelled word to look in the dictionary
+	 * @return		list of possible corrections
+	 */
 	Collection<String> correctWord(String misspelledWord);
-	Set<String> getPhoneticMatches(String word);
-	boolean isPercentMatch(String original, String generated);
+	
+	
+	/** Build dictionary from given dictionary file.
+	 * The file must contain each word on a separate line 
+	 * 
+	 * @param path	path and name of dictionary file
+	 * @throws FileNotFoundException	if dictionary file not found
+	 */
 	void buildDictionary(String path) throws FileNotFoundException;
 	
 }
