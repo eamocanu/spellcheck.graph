@@ -10,6 +10,9 @@ may lead to better words.
 If generated word nodes are found in the dictionary, they are stored in a 
 list and returned as possible corrections.
 
+If you wish to add in your own probability matching, override isPercentMatch(String, String) in SpellChecker.java
+For phonetic matches, override generatePhoneticMatches(..) in PhoneticManager.java
+
 
 
 UI version 
@@ -35,3 +38,5 @@ TODOs
 TODO: Account for plurals
 TODO: Better probability matching
 TODO: Rank results from most significat to least
+TODO: Speed up generateMisspelledWords(String)
+TODO: Speed up generatePhoneticMatches(..)
