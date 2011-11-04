@@ -17,8 +17,9 @@ public class Main {
 		try {
 			spellChecker.buildDictionary("sample dictionary/1000new.txt");
 
-			Collection<String> ls;
+			Collection<String> ls=null;
 			ls = spellChecker.correctWord("tru");
+//			ls = spellChecker.correctWord("ckecker");
 			printList(ls);		
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
