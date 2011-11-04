@@ -25,14 +25,17 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.Stack;
+
 
 
 /**
@@ -50,8 +53,11 @@ import java.util.Stack;
  */
 public class SpellChecker implements SpellCheckerInterface {
 	
+	/** Default maximum depth for DFS */
+	final int DEFAULT_MAX_DEPTH = 2;
+	
 	/** Maximum depth for DFS */
-	final int MAX_DEPTH = 2;
+	private int maxDepth;
 	
 	/** Correctly spelled words */ //TODO fix for memory
 	private Map<String, String> originalWords;
@@ -66,6 +72,9 @@ public class SpellChecker implements SpellCheckerInterface {
 	/** Enables or disables phonetic matching */
 	private boolean enablePhoneticMatching;
 	
+	/** Length of longest word in dictionary */
+	int maxWordSize=0;
+	
 	
 	
 	/**
@@ -77,6 +86,7 @@ public class SpellChecker implements SpellCheckerInterface {
 		originalWords= new HashMap<String,String>();
 		charsMapping= new Chars();
 		phoneticManager= new PhoneticManager();
+		maxDepth= DEFAULT_MAX_DEPTH;
 	}
 	
 	
@@ -92,6 +102,8 @@ public class SpellChecker implements SpellCheckerInterface {
 		while (scanner.hasNext()){
 			String crtWord= scanner.next();
 			originalWords.put(crtWord, crtWord);
+			
+			maxWordSize=Math.max(maxWordSize, crtWord.length());
 		}
 	}
 
@@ -101,20 +113,28 @@ public class SpellChecker implements SpellCheckerInterface {
 	 * 
 	 * It does character (1) replacement, (2) insertion, (3) removal, and (4) swapping
 	 * 
-	 * TODO optimize all string concats
+	 * TODO optimize all string allocation and concats by preallocating a big byte array
+	 * 
+	 * Currently optimized by preallocating array list.
+	 * StringBuffer and CharSequences have very slightly improved performance thus they
+	 * have been removed
 	 */
-	private List<String> generateMisspelledWords(String validWord) {
-		List<String> results = new ArrayList<String>();
-		if (validWord==null) return results;
-		if (validWord.length() == 0) return results;
+	private List<String> generateModifiedWords(String word) {
+		//preallocate entire array
+		List<String> results = new ArrayList<String>(word.length()*(9 + 'z'-'a'+1)*2 +1 +1);
+//		String[] res=new String[word.length()*(9 + 'z'-'a'+1)*2 +1 +1];
 		
+		if (word==null) return results;
+		if (word.length() == 0) return results;
 		
-		for (int i=0; i<validWord.length(); i++){
-			String prefix= validWord.substring(0,i);
-			String suffix= validWord.substring(i+1,validWord.length());
-			String suffix2= validWord.substring(i,validWord.length());
+		StringBuffer newWord= new StringBuffer();
+		
+		for (int i=0; i<word.length(); i++){
+			String prefix= word.substring(0,i);
+			String suffix= word.substring(i+1,word.length());
+			String suffix2= word.substring(i,word.length());
 			
-			List<Character> chars = charsMapping.getCharsFor(validWord.charAt(i));
+			List<Character> chars = charsMapping.getCharsFor(word.charAt(i));
 			//replace 1 char
 			for (Character ch:chars){
 				String generatedWd= prefix + ch+ suffix;//TODO slow
@@ -127,25 +147,27 @@ public class SpellChecker implements SpellCheckerInterface {
 				results.add(generatedWd);
 				
 				//insert new char as suffix
-				generatedWd= validWord + ch;
+				generatedWd= word + ch;
 				results.add(generatedWd);
 			}
 			
 			//remove a char
 			String generatedWd= prefix + suffix;
 			results.add(generatedWd);
+			newWord.append(prefix);
 			
 			//swap chars
 			if (i==0) continue;
-			generatedWd= validWord.substring(0,i-1) + validWord.charAt(i) + validWord.charAt(i-1) + validWord.substring(i+1);
+			generatedWd= word.substring(0,i-1) + word.charAt(i) + word.charAt(i-1) + word.substring(i+1);
 			results.add(generatedWd);
 		}
 		
 		//don't allow back edges to parent node
-		results.remove(validWord);
+		results.remove(word);
 		
 		return results;
 	}
+
 
 	
 	/** Checks to see if given word is in the dictionary or not. 
@@ -174,13 +196,18 @@ public class SpellChecker implements SpellCheckerInterface {
 	 * @return		list of possible corrections
 	 */
 	public Collection<String> correctWord(String misspelledWord){
-		Set<String> possibleCorrections = new HashSet<String>();
-
 		if (originalWords.isEmpty()) {
-			return possibleCorrections;
+			return Collections.emptyList();
 		}
 
+		//the input word differs more than this spell checker can generate for given depth 
+		if (misspelledWord.length() > maxWordSize + maxDepth) 
+			return Collections.emptyList();
+		
+		Set<String> possibleCorrections;
+
 		if (originalWords.containsKey(misspelledWord)){
+			possibleCorrections = new HashSet<String>();
 			possibleCorrections.add(misspelledWord);
 			return possibleCorrections;
 		}
@@ -195,6 +222,8 @@ public class SpellChecker implements SpellCheckerInterface {
 		//get phonetic matches first
 		if (enablePhoneticMatching){
 			possibleCorrections= getPhoneticMatches(misspelledWord);
+		} else {
+			possibleCorrections = new HashSet<String>();
 		}
 		
 		//modified DFS - non recursive to save stack and gain some speed
@@ -221,17 +250,17 @@ public class SpellChecker implements SpellCheckerInterface {
 				continue; //optional
 			}
 			
-			//add some calculations on probabilities for taking branches
+			//add some calculations on probabilities for taking branches (utility fns, etc)
 //			if (!takeCurrentBranch(misspelledWord, crtWord)){
 //				continue;
 //			}
 			
-			if (crtDepth==MAX_DEPTH +1){
+			if (crtDepth==maxDepth +1){
 				continue;
 			}
 			
 			//TODO rank results from most significant to least
-			List<String> l= generateMisspelledWords(crtWord);
+			List<String> l= generateModifiedWords(crtWord);
 			stack.addAll(l);
 			stack.push(separatorString);
 			crtDepth++;
@@ -307,6 +336,17 @@ public class SpellChecker implements SpellCheckerInterface {
 		
 		
 		return false;
+	}
+	
+	
+	/** Set traversal depth. When strings are generated, this depth tells 
+	 * how deep into the generation tree to go.
+	 * 
+	 * Indicated to be set to 2 or at most 3. 
+	 * 
+	 * Node: Higher depth results in exponentially longer time for generating new words */
+	public void setDepth(int newDepth){
+		maxDepth= newDepth;
 	}
 	
 }
