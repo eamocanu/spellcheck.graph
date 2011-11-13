@@ -21,6 +21,8 @@ import eamocanu.dictionary.SpellChecker;
  * Test driver. 
  * 
  * Type in some letters and see real time spell suggestions.
+ * The longer the word the slower the suggestions appear. The fix is to move
+ * the suggestion generating to a new thread.
  */
 public class VisualMain extends JPanel {
 	private static final long serialVersionUID = 6364349005495411834L;
