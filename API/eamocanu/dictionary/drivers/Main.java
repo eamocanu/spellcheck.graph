@@ -7,7 +7,7 @@ import eamocanu.dictionary.SpellChecker;
 /**
  * @author Adrian
  * 
- * Test driver
+ * API Test driver
  */
 public class Main {
 
