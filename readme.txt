@@ -15,6 +15,13 @@ For phonetic matches, override generatePhoneticMatches(..) in PhoneticManager.ja
 
 
 
+How To Run
+1. Import into eclipse (create project from existing source and select the API folder) under spell checker project. 
+2. If you need the graph of generated words, unzip the library in external folder and import that as a project into eclipse. 
+3. Add external project as a dependency of the spell checker project.
+
+
+
 Runtime
 
 Runtime is O(n^depth), where n is word length that is being checked
