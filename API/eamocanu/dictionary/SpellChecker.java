@@ -40,7 +40,7 @@ import java.util.Stack;
 /**
  * @author eamocanu
  * 
- * Experimental spell checker.
+ * Experimental spell checker. Preserves capitalization.
  *  
  * Creates a dictionary from a file with words. Each word on a separate line.
  * When a given word is given to check if it is correct, the current algorithm
@@ -58,8 +58,8 @@ public class SpellChecker implements SpellCheckerInterface {
 	/** Maximum depth for DFS */
 	private int maxDepth;
 	
-	/** Correctly spelled words */ //TODO fix for memory
-	private Map<String, String> originalWords;
+	/** Correctly spelled words */ //TODO fix for memory->char []
+	private Map<String, Boolean> originalWords;
 
 	/** Holds list of characters which are to be tried when replacing a given character
 	 * in the given word to correct */
@@ -82,7 +82,7 @@ public class SpellChecker implements SpellCheckerInterface {
 	 */
 	public SpellChecker(boolean phoneticMatching) {
 		enablePhoneticMatching= phoneticMatching;
-		originalWords= new HashMap<String,String>();
+		originalWords= new HashMap<String,Boolean>();
 		charsMapping= new Chars();
 		phoneticManager= new PhoneticManager();
 		maxDepth= DEFAULT_MAX_DEPTH;
@@ -99,8 +99,8 @@ public class SpellChecker implements SpellCheckerInterface {
 		Scanner scanner=new Scanner(new File(path));
 		
 		while (scanner.hasNext()){
-			String crtWord= scanner.next();
-			originalWords.put(crtWord, crtWord);
+			String crtWord= scanner.next().toLowerCase();
+			originalWords.put(crtWord, true);
 			
 			maxWordSize=Math.max(maxWordSize, crtWord.length());
 		}
@@ -111,8 +111,6 @@ public class SpellChecker implements SpellCheckerInterface {
 	 * Generated words are 1 edit distance away.
 	 * 
 	 * It does character (1) replacement, (2) insertion, (3) removal, and (4) swapping
-	 * 
-	 * TODO optimize all string allocation and concats by preallocating a big byte array
 	 * 
 	 * Currently optimized by preallocating array list.
 	 * StringBuffer and CharSequences have very slightly improved performance thus they
@@ -136,13 +134,13 @@ public class SpellChecker implements SpellCheckerInterface {
 			List<Character> chars = charsMapping.getCharsFor(word.charAt(i));
 			//replace 1 char
 			for (Character ch:chars){
-				String generatedWd= prefix + ch+ suffix;//TODO slow
+				String generatedWd= prefix + ch+ suffix;
 				results.add(generatedWd);
 			}
 			
 			//add insert 1 char (make longer by 1) - inserts as prefix and in mid word
 			for (char ch='a'; ch<='z';ch++){
-				String generatedWd= prefix + ch + suffix2;//TODO slow
+				String generatedWd= prefix + ch + suffix2;
 				results.add(generatedWd);
 				
 				//insert new char as suffix
@@ -176,7 +174,7 @@ public class SpellChecker implements SpellCheckerInterface {
 	 * @return		true if the word to be tested is in dictionary
 	 */
 	public boolean isCorrectWord(String word){
-		return originalWords.containsKey("word");
+		return originalWords.containsKey(word.toLowerCase());
 	}
 
 	
@@ -195,26 +193,28 @@ public class SpellChecker implements SpellCheckerInterface {
 	 * @return		list of possible corrections
 	 */
 	public Collection<String> correctWord(String misspelledWord){
+		String misspelledWordLowerCase= misspelledWord.toLowerCase();
+		
 		if (originalWords.isEmpty()) {
 			return Collections.emptyList();
 		}
 
 		//the input word differs more than this spell checker can generate for given depth 
-		if (misspelledWord.length() > maxWordSize + maxDepth) 
+		if (misspelledWordLowerCase.length() > maxWordSize + maxDepth) 
 			return Collections.emptyList();
 		
 		Set<String> possibleCorrections;
 
-		if (originalWords.containsKey(misspelledWord)){
+		if (originalWords.containsKey(misspelledWordLowerCase)){
 			possibleCorrections = new HashSet<String>();
-			possibleCorrections.add(misspelledWord);
+			possibleCorrections.add(misspelledWordLowerCase);
 			return possibleCorrections;
 		}
 		
 		int crtDepth= 1;
 		String separatorString= "|";
 		Stack<String> stack=new Stack<String>();
-		stack.push(misspelledWord);
+		stack.push(misspelledWordLowerCase);
 		stack.push(separatorString);
 		
 		//TODO build a BST of matches based on score and return top ones
@@ -243,8 +243,9 @@ public class SpellChecker implements SpellCheckerInterface {
 			}
 			
 			if (originalWords.containsKey(crtWord)){
-				if (isPercentMatch(misspelledWord, crtWord)){
-					possibleCorrections.add(crtWord);
+				if (isPercentMatch(misspelledWordLowerCase, crtWord)){
+					//if possibleCorrections.size()<10
+					possibleCorrections.add(restoreOriginalCase(misspelledWord, crtWord));
 				}
 				continue; //optional
 			}
@@ -271,6 +272,31 @@ public class SpellChecker implements SpellCheckerInterface {
 	}
 	
 	
+	private String restoreOriginalCase(String originalWord, String crtWord) {
+		//no CAPS found
+		if (originalWord.equals(originalWord.toLowerCase())) return crtWord;
+		
+		byte [] restoredCaseString = crtWord.getBytes();//new char[crtWord.length()];
+		
+		for (int i=0; i<originalWord.length(); i++){
+			char originalChar= originalWord.intern().charAt(i);
+			if (Character.isLowerCase(originalChar)){
+				continue;
+			}
+			for (int j=i; j<crtWord.length(); j++){
+				if (restoredCaseString[j]==Character.toLowerCase(originalChar)){
+					restoredCaseString[j]=(byte)originalChar;
+					break;
+				}
+			}
+		}
+		//TODO what can actually do is rank words by how many times a word 
+		//is generated from diff parents: keep a map of them w a counter
+//		System.out.println(new String(restoredCaseString));
+		return new String(restoredCaseString);
+	}
+
+
 	/** Retrieves phonetic matches with the help of a phonetic manager.
 	 * The matches are then checked if they are valid dictionary words.
 	 * 
@@ -344,7 +370,7 @@ public class SpellChecker implements SpellCheckerInterface {
 	 * Indicated to be set to 2 or at most 3. 
 	 * 
 	 * Node: Higher depth results in exponentially longer time for generating new words */
-	public void setDepth(int newDepth){
+	public void setSearchDepth(int newDepth){
 		maxDepth= newDepth;
 	}
 	
