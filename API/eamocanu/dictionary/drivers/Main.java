@@ -13,12 +13,12 @@ public class Main {
 
 	public static void main(String[] args) {
 		SpellChecker spellChecker= new SpellChecker(true);
-
+		
 		try {
 			spellChecker.buildDictionary("sample dictionary/1000new.txt");
 
 			Collection<String> ls=null;
-			ls = spellChecker.correctWord("tru");
+			ls = spellChecker.correctWord("Tru");
 //			ls = spellChecker.correctWord("ckecker");
 			printList(ls);		
 		} catch (FileNotFoundException e) {
