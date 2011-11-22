@@ -1,5 +1,13 @@
 Experimental spell checker v0.2
 
+Author: Adrian M
+Downloaded from https://github.com/eamocanu/spellcheck.graph
+Released under the BSD license.
+Let me know if you use this software so I keep track of it
+Email listed at https://github.com/eamocanu
+
+
+
 Creates a dictionary from a file with words. Each word on a separate line.
 When a given word is given to check if it is correct, the current algorithm
 builds a graph of generations and checks to see which new nodes lead to words
